@@ -21,7 +21,8 @@ class MyConditionalPrior:public DNest4::ConditionalPrior
 		double perturb_hyperparameters(DNest4::RNG& rng);
 
 	public:
-		MyConditionalPrior(double x_min, double x_max);
+		MyConditionalPrior(double x_min, double x_max,
+					double mu_min, double mu_max);
 
 		void from_prior(DNest4::RNG& rng);
 

@@ -5,9 +5,12 @@
 
 using namespace DNest4;
 
-MyConditionalPrior::MyConditionalPrior(double x_min, double x_max)
+MyConditionalPrior::MyConditionalPrior(double x_min, double x_max, 
+					double mu_min, double mu_max)
 :x_min(x_min)
 ,x_max(x_max)
+,mu_min(mu_min)
+,mu_max(mu_max)
 ,min_width(0.)
 {
 
