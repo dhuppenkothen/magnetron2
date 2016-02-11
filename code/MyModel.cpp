@@ -72,15 +72,33 @@ void MyModel::calculate_mu()
                                                  exp((tc - t_right[i])/fall));
                         }
                 }
+        vector<double> y(mu.size());
+        double alpha = exp(-1./noise_L);
+
+        for(size_t i=0; i<mu.size(); i++)
+        {
+                if(i==0)
+                        y[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
+                else
+                        y[i] = alpha*y[i-1] + noise_sigma*noise_normals[i];
+                mu[i] *= exp(y[i]);
+        }
+
+
         }
 
 }
 
 void MyModel::from_prior(RNG& rng)
 {
-    background = tan(M_PI*(0.97*randomU() - 0.485));
-    background = exp(background);
-    bursts.fromPrior();
+	background = tan(M_PI*(0.97*randomU() - 0.485));
+	background = exp(background);
+	bursts.fromPrior();
+ 
+        noise_sigma = exp(log(1E-3) + log(1E3)*randomU());
+        noise_L = exp(log(1E-2*Data::get_instance().get_t_range())
+                        + log(1E3)*randomU());
+
         calculate_mu();
 
 }
@@ -104,13 +122,31 @@ double MyModel::perturb(RNG& rng)
                 for(size_t i=0; i<mu.size(); i++)
                         mu[i] += background;
         }
-        else
+
+        else if(randomU() <= 0.5)
         {
-                logH += bursts.perturb();
-                bursts.consolidate_diff();
+                noise_sigma = log(noise_sigma);
+                noise_sigma += log(1E3)*randh();
+                wrap(noise_sigma, log(1E-3), log(1.));
+                noise_sigma = exp(noise_sigma);
+
+                noise_L = log(noise_L);
+                noise_L += log(1E3)*randh();
+                wrap(noise_L, log(1E-2*Data::get_instance().get_t_range()), log(10.*Data::get_instance().get_t_range()));
+                noise_L = exp(noise_L);
+
                 calculate_mu();
         }
-
+        else
+        {
+                int num = exp(log((double)noise_normals.size())*randomU());
+                for(int i=0; i<num; i++)
+                {
+                        int k = randInt(noise_normals.size());
+                        noise_normals[k] = randn();
+                }
+                calculate_mu();
+        }
 
 
 	return logH;
@@ -118,8 +154,11 @@ double MyModel::perturb(RNG& rng)
 
 double MyModel::log_likelihood() const
 {
-	double logL = 0.;
-        for(size_t i=0; i<y.size(); i++)
+        const vector<double>& t = data.get_t();
+        const vector<double>& y = data.get_y();
+
+        double logl = 0.;
+        for(size_t i=0; i<t.size(); i++)
                 logl += -mu[i] + y[i]*log(mu[i]) - gsl_sf_lngamma(y[i] + 1.);
 
 	return logL;
