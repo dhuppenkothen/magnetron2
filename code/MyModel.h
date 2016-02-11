@@ -1,16 +1,38 @@
-#ifndef DNest4_Template_MyModel
-#define DNest4_Template_MyModel
+#ifndef _MyModel_
+#define _MyModel_
 
 #include "DNest4/code/RNG.h"
 #include "MyConditionalPrior.h"
 #include <ostream>
+#include "Model.h"
+#include "Data.h"
+#include "RJObject.h"
+#include "GaussPrior3D.h"
+#include <vector>
 
-class MyModel
+class MyModel:public DNest4::Model
 {
 	private:
+		// Reference to the data
+		static const Data& data;
 
+		// A flat background level
+		double background;
 
-	public:
+		// The bursts
+		RJObject<GaussPrior3D> bursts;
+
+		// Extra white noise on teh Poisson rate
+		std::vector<double> noise_normals;
+		double noise_sigma, noise_L;
+
+		// Poisson mean
+		std::vector<long double> mu;
+
+		// Calculate mu from scratch:
+		void calculate_mu();
+
+	public: 
 		// Constructor only gives size of params
 		MyModel();
 
