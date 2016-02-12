@@ -1,5 +1,5 @@
 #include "MyConditionalPrior.h"
-#include "Utils.h"
+#include "DNest4/code/Utils.h"
 #include "Data.h"
 #include <cmath>
 
@@ -18,25 +18,25 @@ MyConditionalPrior::MyConditionalPrior(double x_min, double x_max,
 
 void MyConditionalPrior::from_prior(RNG& rng)
 {
-	mu = tan(M_PI*(0.97*randomU() - 0.485));
+	mu = tan(M_PI*(0.97*rng.rand() - 0.485));
 	mu = exp(mu);
-	mu_widths = exp(log(1E-3*(x_max - x_min)) + log(1E3)*randomU());
+	mu_widths = exp(log(1E-3*(x_max - x_min)) + log(1E3)*rng.rand());
 
-	a = -10. + 20.*randomU();
-	b = 2.*randomU();
+	a = -10. + 20.*rng.rand();
+	b = 2.*rng.rand();
 }
 
 double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 {
 	double logH = 0.;
 
-	int which = randInt(4);
+	int which = rng.rand_int(4);
 
 	if(which == 0)
 	{
 		mu = log(mu);
 		mu = (atan(mu)/M_PI + 0.485)/0.97;
-		mu += pow(10., 1.5 - 6.*randomU())*randn();
+		mu += pow(10., 1.5 - 6.*rng.rand())*rng.randn();
 		mu = mod(mu, 1.);
 		mu = tan(M_PI*(0.97*mu - 0.485));
 		mu = exp(mu);
@@ -44,18 +44,18 @@ double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 	if(which == 1)
 	{
 		mu_widths = log(mu_widths/(x_max - x_min));
-		mu_widths += log(1E3)*pow(10., 1.5 - 6.*randomU())*randn();
+		mu_widths += log(1E3)*pow(10., 1.5 - 6.*rng.rand())*rng.randn();
 		mu_widths = mod(mu_widths - log(1E-3), log(1E3)) + log(1E-3);
 		mu_widths = (x_max - x_min)*exp(mu_widths);
 	}
 	if(which == 2)
 	{
-		a += 20.*randh();
+		a += 20.*rng.randh();
 		a = mod(a + 10., 20.) - 10.;
 	}
 	if(which == 3)
 	{
-		b += 2.*randh();
+		b += 2.*rng.randh();
 		b = mod(b, 2.);
 	}
 

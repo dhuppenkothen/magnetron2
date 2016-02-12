@@ -1,8 +1,7 @@
 #ifndef _MyConditionalPrior_
 #define _MyConditionalPrior_
 
-#include "RJObject/ConditionalPriors/ConditionalPrior.h"
-#include "MyConditionalPrior.h"
+#include "DNest4/code/RJObject/ConditionalPriors/ConditionalPrior.h"
 
 class MyConditionalPrior:public DNest4::ConditionalPrior
 {

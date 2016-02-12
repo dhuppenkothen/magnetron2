@@ -4,13 +4,11 @@
 #include "DNest4/code/RNG.h"
 #include "MyConditionalPrior.h"
 #include <ostream>
-#include "Model.h"
 #include "Data.h"
-#include "RJObject.h"
-#include "GaussPrior3D.h"
+#include "DNest4/code/RJObject/RJObject.h"
 #include <vector>
-
-class MyModel:public DNest4::Model
+ 
+class MyModel
 {
 	private:
 		// Reference to the data
@@ -18,10 +16,11 @@ class MyModel:public DNest4::Model
 
 		// A flat background level
 		double background;
-
+ 
 		// The bursts
-		RJObject<GaussPrior3D> bursts;
-
+//		DNest4::RJObject<MyConditionalPrior> bursts;
+		DNest4::RJObject<MyConditionalPrior> bursts;
+		
 		// Extra white noise on teh Poisson rate
 		std::vector<double> noise_normals;
 		double noise_sigma, noise_L;
