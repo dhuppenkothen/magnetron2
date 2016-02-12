@@ -12,9 +12,10 @@ const Data& MyModel::data = Data::get_instance();
 MyModel::MyModel()
 :bursts(4, 100, false, MyConditionalPrior(data.get_t_min(), data.get_t_max(),
                 1E-10, 5.0*3.5e5*data.get_dt()))
+,noise_normals(data.get_t().size())
 ,mu(data.get_t().size())
 {
-cout << mu.size() << endl;
+
 }
 
 void MyModel::calculate_mu()
