@@ -15,7 +15,7 @@ const DNest4::Cauchy MyModel::cauchy(0.0, 1.0);
 
 MyModel::MyModel()
 :bursts(4, 100, false, MyConditionalPrior(data.get_t_min(), data.get_t_max(),
-                1E-10, 5.0*3.5e5*data.get_dt()))
+                1E-10, 150.0 ))
 ,noise_normals(data.get_t().size())
 ,mu(data.get_t().size())
 {
@@ -28,16 +28,12 @@ void MyModel::calculate_mu()
 //        const vector<double>& t_right = data.get_t_right();
 	const vector<double>& t = data.get_t();
 
-        // Update or from scratch?
-        bool update = (bursts.get_added().size() < bursts.get_components().size());
 
         // Get the components
-        const vector< vector<double> >& components = (update)?(bursts.get_added()):
-                                (bursts.get_components());
+        const vector< vector<double> >& components = bursts.get_components();
 
-        // Set the background level
-        if(!update)
-                mu.assign(mu.size(), background);
+
+        mu.assign(mu.size(), background);
 
         double amplitude, skew, tc;
         double rise, fall;
