@@ -11,7 +11,7 @@ MyConditionalPrior::MyConditionalPrior(double x_min, double x_max,
 ,x_max(x_max)
 ,mu_min(mu_min)
 ,mu_max(mu_max)
-,min_width(0.)
+,min_width(1.) // NOT SURE THIS IS CORRECT MIN_WIDTH!
 {
 
 }
@@ -74,7 +74,7 @@ double MyConditionalPrior::log_pdf(const std::vector<double>& vec) const
 
 void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 {
-	vec[0] = x_min + (x_max - x_min)*vec[0];
+	vec[0] = x_min - 30.0 + (x_max - x_min + 60.0)*vec[0];
 	vec[1] = -mu*log(1. - vec[1]);
 	vec[2] = min_width - mu_widths*log(1. - vec[2]);
 	vec[3] = exp(a - b + 2.*b*vec[3]);
@@ -82,7 +82,7 @@ void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 
 void MyConditionalPrior::to_uniform(std::vector<double>& vec) const
 {
-	vec[0] = (vec[0] - x_min)/(x_max - x_min);
+	vec[0] = (vec[0] - x_min - 30.0)/(x_max - x_min + 60.0);
 	vec[1] = 1. - exp(-vec[1]/mu);
 	vec[2] = 1. - exp(-(vec[2] - min_width)/mu_widths);
 	vec[3] = (log(vec[3]) + b - a)/(2.*b);
