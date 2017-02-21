@@ -122,31 +122,34 @@ def read_dnest_results(namestr, datadir="./", par_ind=10):
     # background parameter
     bkg = samples[:,0]
 
+    ou_noise_l = samples[:,1]
+    ou_noise_sigma = samples[:,2]
+
     # dimensions of parameter space of individual  model components
-    burst_dims =  samples[:,1]
+    burst_dims =  samples[:,3]
     burst_dims = list(set(burst_dims))[0]
 
     # total number of model components permissible in the model
-    compmax = samples[:,2]
+    compmax = samples[:,4]
     compmax = int(list(set(compmax))[0])
 
     # hyper-parameter (mean) of the exponential distribution used
     # as prior for the spike amplitudes
     # NOTE: IN LINEAR SPACE, NOT LOG
-    hyper_mean_amplitude = samples[:,3]
+    hyper_mean_amplitude = samples[:,5]
 
     # hyper-parameter (mean) for the exponential distribution used
     # as prior for the spike rise time
     # NOTE: IN LINEAR SPACE, NOT LOG
-    hyper_mean_risetime = samples[:,4]
+    hyper_mean_risetime = samples[:,6]
 
     # hyper-parameters for the lower and upper limits of the uniform
     # distribution osed as a prior for the skew
-    hyper_mean_skew = samples[:,5]
-    hyper_width_skew = samples[:,6]
+    hyper_mean_skew = samples[:,7]
+    hyper_width_skew = samples[:,8]
 
     # distribution over number of model components
-    nbursts = samples[:, 7]
+    nbursts = samples[:, 9]
 
     # peak positions for all model components, some will be zero
     pos_all = np.array(samples[:, par_ind:par_ind+compmax])
@@ -170,6 +173,7 @@ def read_dnest_results(namestr, datadir="./", par_ind=10):
 
 
     sample_dict = {"bkg":bkg, "cdim":burst_dims, "nbursts":nbursts,
+                   "ou_noise_l": ou_noise_l, "ou_noise_sigma": ou_noise_sigma,
                    "cmax":compmax,
                    "parameters":paras_real,
                    "hyper_mean_amp":hyper_mean_amplitude,
@@ -179,9 +183,19 @@ def read_dnest_results(namestr, datadir="./", par_ind=10):
 
     return sample_dict
 
-def plot_hyper_parameters(namestr, datadir="./", ouprocess=True):
+def plot_hyper_parameters(namestr, datadir="./", ouprocess=True, par_ind=10):
 
+    sd = read_dnest_results(namestr, datadir, par_ind=par_ind)
 
+    bkg = sd["bkg"]
+    ou_noise_l = sd["ou_noise_l"]
+    ou_noise_sigma = sd["ou_noise_sigma"]
+
+    amp_mean = sd["hyper_mean_amp"]
+    rise_mean = sd["hyper_mean_rise"]
+
+    skew_mean = sd["hyper_mean_skew"]
+    skew_width = sd["hyper_width_skew"]
 
     return
 
@@ -285,3 +299,9 @@ def plot_components(namestr, datadir="./", nsamples=1, idx=None, par_ind=10):
             color="blue")
 
     return fig, ax
+
+def plot_doppler_factors():
+    pass
+
+def plot_fastest_risetime():
+    pass
