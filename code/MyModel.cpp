@@ -28,7 +28,6 @@ void MyModel::calculate_mu()
 //        const vector<double>& t_right = data.get_t_right();
 	const vector<double>& t = data.get_t();
 
-
         // Get the components
         const vector< vector<double> >& components = bursts.get_components();
 
@@ -220,7 +219,7 @@ double MyModel::log_likelihood() const
 
 void MyModel::print(std::ostream& out) const
 {
-        out<<background<<' ';
+        out<<background<<' '<<noise_sigma<<' '<<noise_L<<' ';
         bursts.print(out);
         for(size_t i=0; i<mu.size(); i++)
                 out<<mu[i]<<' ';
