@@ -11,7 +11,7 @@ MyConditionalPrior::MyConditionalPrior(double x_min, double x_max,
 ,x_max(x_max)
 ,mu_min(mu_min)
 ,mu_max(mu_max)
-,min_width(1.) // NOT SURE THIS IS CORRECT MIN_WIDTH!
+,min_width(0.1) // NOT SURE THIS IS CORRECT MIN_WIDTH!
 {
 
 }
@@ -22,8 +22,8 @@ void MyConditionalPrior::from_prior(RNG& rng)
 	mu = exp(mu);
 	mu_widths = exp(log(1E-3*(x_max - x_min)) + log(1E3)*rng.rand());
 
-	a = -10. + 20.*rng.rand();
-	b = 2.*rng.rand();
+	a = -20. + 40.*rng.rand();
+	b = 10.*rng.rand();
 }
 
 double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
@@ -50,13 +50,13 @@ double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 	}
 	if(which == 2)
 	{
-		a += 20.*rng.randh();
-		a = mod(a + 10., 20.) - 10.;
+		a += 40.*rng.randh();
+		a = mod(a + 20., 40.) - 20.;
 	}
 	if(which == 3)
 	{
-		b += 2.*rng.randh();
-		b = mod(b, 2.);
+		b += 10.*rng.randh();
+		b = mod(b, 10.);
 	}
 
 	return logH;
@@ -74,7 +74,7 @@ double MyConditionalPrior::log_pdf(const std::vector<double>& vec) const
 
 void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 {
-	vec[0] = x_min - 30.0 + (x_max - x_min + 60.0)*vec[0];
+	vec[0] = x_min + (x_max - x_min)*vec[0];
 	vec[1] = -mu*log(1. - vec[1]);
 	vec[2] = min_width - mu_widths*log(1. - vec[2]);
 	vec[3] = exp(a - b + 2.*b*vec[3]);
@@ -82,7 +82,7 @@ void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 
 void MyConditionalPrior::to_uniform(std::vector<double>& vec) const
 {
-	vec[0] = (vec[0] - x_min - 30.0)/(x_max - x_min + 60.0);
+	vec[0] = (vec[0] - x_min)/(x_max - x_min);
 	vec[1] = 1. - exp(-vec[1]/mu);
 	vec[2] = 1. - exp(-(vec[2] - min_width)/mu_widths);
 	vec[3] = (log(vec[3]) + b - a)/(2.*b);

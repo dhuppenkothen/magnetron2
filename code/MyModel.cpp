@@ -158,50 +158,6 @@ double MyModel::perturb(RNG& rng)
 
         calculate_mu();
         return logH;
-
-//        if(rng.rand() <= 0.2)
-//        {
-//                for(size_t i=0; i<mu.size(); i++)
-//                        mu[i] -= background;
-//
-//                background = log(background);
-//                background = (atan(background)/M_PI + 0.485)/0.97;
-//                background += pow(10., 1.5 - 6.*rng.rand())*rng.randn();
-//                background = mod(background, 1.);
-//                background = tan(M_PI*(0.97*background - 0.485));
-//                background = exp(background);
-//
-//                for(size_t i=0; i<mu.size(); i++)
-//                        mu[i] += background;
-//        }
-//
-//        else if(rng.rand() <= 0.5)
-//        {
-//                noise_sigma = log(noise_sigma);
-//                noise_sigma += log(1E3)*rng.randh();
-//                wrap(noise_sigma, log(1E-3), log(1.));
-//                noise_sigma = exp(noise_sigma);
-//
-//                noise_L = log(noise_L);
-//                noise_L += log(1E3)*rng.randh();
-//                wrap(noise_L, log(1E-2*Data::get_instance().get_t_range()), log(10.*Data::get_instance().get_t_range()));
-//                noise_L = exp(noise_L);
-//
-//                calculate_mu();
-//        }
-//        else
-//        {
-//                int num = exp(log((double)noise_normals.size())*rng.rand());
-//                for(int i=0; i<num; i++)
-//                {
-//                        int k = rng.rand_int(noise_normals.size());
-//                        noise_normals[k] = rng.randn();
-//                }
-//                calculate_mu();
-//        }
-//
-
-//	return logH;
 }
 
 double MyModel::log_likelihood() const
@@ -212,7 +168,6 @@ double MyModel::log_likelihood() const
 
         double logl = 0.;
         for(size_t i=0; i<t.size(); i++)
-//                logl += -mu[i] + y[i]*log(mu[i]) - lgamma(y[i] + 1.);//gsl_sf_lngamma(y[i] + 1.);
 		logl += -0.5 * log(2.*M_PI) - log(yerr[i]) - 0.5 * pow((y[i] - mu[i])/yerr[i], 2);
 	return logl;
 }
