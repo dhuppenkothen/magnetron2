@@ -197,6 +197,40 @@ def plot_hyper_parameters(namestr, datadir="./", ouprocess=True, par_ind=10):
     skew_mean = sd["hyper_mean_skew"]
     skew_width = sd["hyper_width_skew"]
 
+    fig1, (ax11, ax12, ax13) = plt.subplots(1, 3, figsize=(13, 4))
+    ax11.hist(bkg, bins=50)
+    ax11.set_xlabel("constant background level")
+    ax11.set_ylabel("Number of samples")
+    ax11.set_title(namestr)
+
+    ax12.hist(ou_noise_l, bins=50)
+    ax12.set_xlabel("OU Process time scale")
+
+    ax13.hist(ou_noise_sigma, bins=50)
+    ax13.set_xlabel("OU Process amplitude")
+
+    plt.savefig("%s%s_bkg.png"%(datadir, namestr), format="png")
+    plt.close()
+
+
+    fig2, ((ax21, ax22), (ax23, ax24)) = plt.subplots(2, 2, figsize=(10, 10))
+    ax21.hist(amp_mean, bins=50)
+    ax21.set_xlabel("Mean of exponential amplitude prior")
+    ax21.set_ylabel("Number of samples")
+
+    ax22.hist(rise_mean, bins=50)
+    ax22.set_xlabel("Mean of exponential rise time prior")
+
+    ax23.hist(skew_mean, bins=50)
+    ax23.set_xlabel("Mid-point of uniform skewness prior")
+    ax23.set_ylabel("Number of samples")
+
+    ax24.hist(skew_width, bins=50)
+    ax24.set_xlabel("Half-width of uniform skewness prior")
+
+    plt.savefig("%s%s_hypers.png"%(datadir, namestr), format="png")
+    plt.close()
+
     return
 
 def plot_flare_parameters(namestr, datadir="./", par_ind=10):
