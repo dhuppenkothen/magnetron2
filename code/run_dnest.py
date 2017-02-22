@@ -252,8 +252,8 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
     print("directory: %s" %fdir)
     print("filename: %s" %fname)
 
-    fsplit = fname.split("_")
-    froot = "%s/%s_%s" %(fdir, fsplit[0], fsplit[1])
+    fsplit = fname.split(".")
+    froot = "%s/%s" %(fdir, fsplit[0])
     print("froot: " + str(froot))
 
 
@@ -324,15 +324,14 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
     logx_samples, p_samples = postprocess_new(save_posterior=True)    
 
     fsplit = filename.split("_")
-    #froot = "%s_%s" %(fsplit[0], fsplit[1])
     print("froot: " + str(froot))
 
-    shutil.move("sample.txt", "%s_sample.txt" %froot)
+    shutil.move("sample.txt", "%s/%s_sample.txt" %(fdir, froot))
     try:
-        shutil.move("posterior_sample.txt", "%s_posterior_sample.txt" %froot)
-        shutil.move("levels.txt", "%s_levels.txt" %froot)
-        shutil.move("sample_info.txt", "%s_sample_info.txt" %froot)
-        shutil.move("weights.txt", "%s_weights.txt" %froot)
+        shutil.move("posterior_sample.txt", "%s/%s_posterior_sample.txt" %(fdir, froot))
+        shutil.move("levels.txt", "%s/%s_levels.txt" %(fdir, froot))
+        shutil.move("sample_info.txt", "%s/%s_sample_info.txt" %(fdir, froot))
+        shutil.move("weights.txt", "%s/%s_weights.txt" %(fdir, froot))
     except IOError:
         print("No file posterior_sample.txt")
 
@@ -342,7 +341,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
 def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat"):
 
     print("I am in run_all_bursts")
-    filenames = glob.glob("%s*_data.dat"%data_dir)
+    filenames = glob.glob("%s*.csv"%data_dir)
     print(filenames)
 
     levelfilename = data_dir+levelfilename
