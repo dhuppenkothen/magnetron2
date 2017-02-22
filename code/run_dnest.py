@@ -32,7 +32,7 @@ def rewrite_main(filename, dnest_dir = "./"):
     return
 
 
-def rewrite_options(nlevels=200, dnest_dir="./"):
+def rewrite_options(nlevels=1000, dnest_dir="./"):
 
     mfile = open(dnest_dir+"OPTIONS", "r")
     mdata = mfile.readlines()
@@ -243,7 +243,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
     ### first run: set levels to 200
     print("Rewriting DNest run file")
     rewrite_main(filename, dnest_dir)
-    rewrite_options(nlevels=200, dnest_dir=dnest_dir)
+    rewrite_options(nlevels=1000, dnest_dir=dnest_dir)
     remake_model(dnest_dir)
 
     fdir = filename.split("/")
