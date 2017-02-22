@@ -7,8 +7,7 @@ import copy
 import glob
 import argparse
 
-import postprocess
-import burstmodel
+from dnest4 import postprocess
 
 def rewrite_main(filename, dnest_dir = "./"):
 
@@ -96,7 +95,8 @@ def extract_nlevels(filename):
 
 
 
-def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterior=False):
+def postprocess_new(temperature=1., numResampleLogX=1, plot=False,
+                    save_posterior=False):
 
     cut = 0
 
@@ -117,8 +117,11 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
         sample_info = sample_info[0:lowest, :]
 
     # Convert to lists of tuples
-    logl_levels = [(levels[i,1], levels[i, 2]) for i in xrange(0, levels.shape[0])] # logl, tiebreaker
-    logl_samples = [(sample_info[i, 1], sample_info[i, 2], i) for i in xrange(0, sample.shape[0])] # logl, tiebreaker, id
+    logl_levels = [(levels[i,1], levels[i, 2]) for i in range(0,
+                                                              levels.shape[0])] # logl, tiebreaker
+    logl_samples = [(sample_info[i, 1], sample_info[i, 2], i) for
+                    i in range(0, sample.shape[0])] # logl, tiebreaker, id
+
     logx_samples = np.zeros((sample_info.shape[0], numResampleLogX))
     logp_samples = np.zeros((sample_info.shape[0], numResampleLogX))
     logP_samples = np.zeros((sample_info.shape[0], numResampleLogX))
@@ -128,18 +131,19 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
 
     # Find sandwiching level for each sample
     sandwich = sample_info[:,0].copy().astype('int')
-    for i in xrange(0, sample.shape[0]):
-        while sandwich[i] < levels.shape[0]-1 and logl_samples[i] > logl_levels[sandwich[i] + 1]:
+    for i in range(0, sample.shape[0]):
+        while sandwich[i] < levels.shape[0]-1 and \
+                        logl_samples[i] > logl_levels[sandwich[i] + 1]:
             sandwich[i] += 1
 
 
-    for z in xrange(0, numResampleLogX):
+    for z in range(0, numResampleLogX):
         # For each level
         for i in range(0, levels.shape[0]):
             # Find the samples sandwiched by this level
             which = np.nonzero(sandwich == i)[0]
             logl_samples_thisLevel = [] # (logl, tieBreaker, ID)
-            for j in xrange(0, len(which)):
+            for j in range(0, len(which)):
                 logl_samples_thisLevel.append(copy.deepcopy(logl_samples[which[j]]))
             logl_samples_thisLevel = sorted(logl_samples_thisLevel)
             N = len(logl_samples_thisLevel)
@@ -158,8 +162,9 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
                 U = Umin + (1. - Umin)*np.linspace(1./(N+1), 1. - 1./(N+1), N)
             logx_samples_thisLevel = np.sort(logx_max + np.log(U))[::-1]
 
-            for j in xrange(0, which.size):
-                logx_samples[logl_samples_thisLevel[j][2]][z] = logx_samples_thisLevel[j]
+            for j in range(0, which.size):
+                logx_samples[logl_samples_thisLevel[j][2]][z] = \
+                    logx_samples_thisLevel[j]
 
                 if j != which.size - 1:
                     left = logx_samples_thisLevel[j+1]
@@ -173,11 +178,13 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
                 else:
                     right = levels[i][0]
 
-                logp_samples[logl_samples_thisLevel[j][2]][z] = np.log(0.5) + postprocess.logdiffexp(right, left)
+                logp_samples[logl_samples_thisLevel[j][2]][z] = \
+                    np.log(0.5) + postprocess.logdiffexp(right, left)
 
         logl = sample_info[:,1]/temperature
 
-        logp_samples[:,z] = logp_samples[:,z] - postprocess.logsumexp(logp_samples[:,z])
+        logp_samples[:,z] = logp_samples[:,z] - \
+                            postprocess.logsumexp(logp_samples[:,z])
         logP_samples[:,z] = logp_samples[:,z] + logl
         logz_estimates[z] = postprocess.logsumexp(logP_samples[:,z])
         logP_samples[:,z] -= logz_estimates[z]
@@ -195,7 +202,8 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
         ESS = np.exp(-np.sum(P_samples*np.log(P_samples+1E-300)))
 
         print("log(Z) = " + str(logz_estimate) + " +- " + str(logz_error))
-        print("Information = " + str(H_estimate) + " +- " + str(H_error) + " nats.")
+        print("Information = " + str(H_estimate) + " +- " +
+              str(H_error) + " nats.")
         print("Effective sample size = " + str(ESS))
 
         # Resample to uniform weight
@@ -204,7 +212,7 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False, save_posterio
         w = P_samples
         w = w/np.max(w)
         np.savetxt('weights.txt', w) # Save weights
-        for i in xrange(0, N):
+        for i in range(0, N):
             while True:
                 which = np.random.randint(sample.shape[0])
                 if np.random.rand() <= w[which]:
@@ -219,8 +227,9 @@ def find_weights(p_samples):
 
     print("max(p_samples): %f" %np.max(p_samples[-10:]))
 
-    ### NOTE: logx_samples runs from 0 to -120, but I'm interested in the values of p_samples near the
-    ### smallest values of X, so I need to look at the end of the list
+    # NOTE: logx_samples runs from 0 to -120, but I'm interested
+    # in the values of p_samples near the
+    # smallest values of X, so I need to look at the end of the list
     if np.max(p_samples[-10:]) < 1.0e-5:
         print("Returning True")
         return True
@@ -230,22 +239,6 @@ def find_weights(p_samples):
 
 
 def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
-
-    times, counts = burstmodel.read_gbm_lightcurves(filename)
-
-    dt = times[1] - times[0]
-
-    #dt_wanted = 0.0005
-
-
-    #if dt < dt_wanted:
-    #    dt_new = int(dt_wanted/dt)
-    #    assert dt_wanted/dt >1, "New time resolution smaller than old one! This is wrong!"
-    #    bintimes, bincounts = burstmodel.rebin_lightcurve(times, counts, dt_new, type="sum")
-
-    #    np.savetxt("%s_new.dat"%(filename[:-4]), np.array(zip(bintimes, bincounts)))
-
-    #    filename = "%s_new.dat"%(filename[:-4])
 
     ### first run: set levels to 200
     print("Rewriting DNest run file")
@@ -318,7 +311,6 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
             print("Endflag: " + str(endflag))
 
             if len(samples) >= nsims and len(np.shape(samples)) > 1:
-            #if len(samples) >= np.max([5*nlevels, 1000+nlevels]) and len(np.shape(samples)) > 1:
                 endflag = True
             else:
                 endflag = False
@@ -374,15 +366,21 @@ def main():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Running DNest on a number of bursts")
+    parser = argparse.ArgumentParser(description="Running DNest on a number "
+                                                 "of bursts")
 
-    parser.add_argument("-d", "--datadir", action="store", required=False, dest="data_dir",
-                        default="./", help="Specify directory with data files (default: current directory)")
-    parser.add_argument("-n", "--dnestdir", action="store", required=False, dest="dnest_dir",
-                        default="./", help="Specify directory with DNest model implementation "
-                                           "(default: current directory")
-    parser.add_argument("-f", "--filename", action="store", required=False, dest="filename",
-                        default="test_levels.dat", help="Define filename for file that saves the number of levels to use")
+    parser.add_argument("-d", "--datadir", action="store", required=False,
+                        dest="data_dir",
+                        default="./", help="Specify directory with data "
+                                           "files (default: current directory)")
+    parser.add_argument("-n", "--dnestdir", action="store", required=False,
+                        dest="dnest_dir", default="./",
+                        help="Specify directory with DNest model "
+                             "implementation (default: current directory")
+    parser.add_argument("-f", "--filename", action="store", required=False,
+                        dest="filename", default="test_levels.dat",
+                        help="Define filename for file that saves the number "
+                             "of levels to use")
 
     clargs = parser.parse_args()
     data_dir = clargs.data_dir
