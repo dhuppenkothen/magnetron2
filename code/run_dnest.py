@@ -238,7 +238,10 @@ def find_weights(p_samples):
         return False
 
 
-def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
+def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
+              ncores=8):
+
+    assert isinstance(ncores, int), "Number of cores must be an integer number!"
 
     ### first run: set levels to 200
     print("Rewriting DNest run file")
@@ -262,8 +265,9 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
 
 
     print("First run of DNest: Find number of levels")
+    print("I am running on %i cores."%ncores)
     ## run DNest
-    dnest_process = subprocess.Popen(["./main", "-t", "8"])
+    dnest_process = subprocess.Popen(["./main", "-t", "%i"%ncores])
 
 
 
@@ -298,7 +302,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
     rewrite_options(nlevels=nlevels, dnest_dir=dnest_dir)
     remake_model(dnest_dir)
 
-    dnest_process = subprocess.Popen(["./main", "-t", "8"])
+    dnest_process = subprocess.Popen(["./main", "-t", "%i"%ncores])
 
     endflag = False
     while endflag is False:
@@ -338,7 +342,8 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100):
     return
 
 
-def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat"):
+def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat",
+                   ncores=8):
 
     print("I am in run_all_bursts")
     filenames = glob.glob("%s*.csv"%data_dir)
@@ -353,14 +358,15 @@ def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat
 
     for f in filenames:
         print("Running on burst %s" %f)
-        run_burst(f, dnest_dir=dnest_dir, levelfilename=levelfilename)
+        run_burst(f, dnest_dir=dnest_dir, levelfilename=levelfilename,
+                  ncores=ncores)
 
     return
 
 
 def main():
     print("I am in main")
-    run_all_bursts(data_dir, dnest_dir, levelfilename)
+    run_all_bursts(data_dir, dnest_dir, levelfilename, ncores=ncores)
     return
 
 
@@ -381,9 +387,15 @@ if __name__ == "__main__":
                         help="Define filename for file that saves the number "
                              "of levels to use")
 
+    parser.add_argument("-c", "--cores", action="store", required=False, type=int,
+                        dest="ncores", default=8, help="Number of cores "
+                                                       "DNest4 should use.")
+
     clargs = parser.parse_args()
+
     data_dir = clargs.data_dir
     dnest_dir = clargs.dnest_dir
     levelfilename = clargs.filename
+    ncores = clargs.ncores
 
     main()
