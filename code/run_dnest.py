@@ -38,7 +38,9 @@ def rewrite_options(nlevels=1000, dnest_dir="./"):
     mdata = mfile.readlines()
     mfile.close()
 
-    mdata[-4] = '%i\t# maximum number of levels\n'%nlevels
+    print(mdata[6])
+    mdata[6] = '%i\t# maximum number of levels\n'%nlevels
+    print(mdata[6])
 
     mwrite_file = open(dnest_dir+"OPTIONS.tmp", "w")
 
@@ -238,7 +240,7 @@ def find_weights(p_samples):
         return False
 
 
-def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
+def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=1,
               ncores=8):
 
     assert isinstance(ncores, int), "Number of cores must be an integer number!"
@@ -256,7 +258,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     print("filename: %s" %fname)
 
     fsplit = fname.split(".")
-    froot = "%s/%s" %(fdir, fsplit[0])
+    froot = "%s%s" %(fdir, fsplit[0])
     print("froot: " + str(froot))
 
 
@@ -279,7 +281,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
             if p_samples is None:
                 endflag = False
             else:
-                endflag = find_weights(p_samples)
+                endflag = True #find_weights(p_samples)
                 print("Endflag: " + str(endflag))
 
         except KeyboardInterrupt:
@@ -317,7 +319,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
             if len(samples) >= nsims and len(np.shape(samples)) > 1:
                 endflag = True
             else:
-                endflag = False
+                endflag = True #False
         except KeyboardInterrupt:
             break
 
@@ -327,15 +329,14 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
      
     logx_samples, p_samples = postprocess_new(save_posterior=True)    
 
-    fsplit = filename.split("_")
     print("froot: " + str(froot))
 
-    shutil.move("sample.txt", "%s/%s_sample.txt" %(fdir, froot))
+    shutil.move("sample.txt", "%s_sample.txt" %froot)
     try:
-        shutil.move("posterior_sample.txt", "%s/%s_posterior_sample.txt" %(fdir, froot))
-        shutil.move("levels.txt", "%s/%s_levels.txt" %(fdir, froot))
-        shutil.move("sample_info.txt", "%s/%s_sample_info.txt" %(fdir, froot))
-        shutil.move("weights.txt", "%s/%s_weights.txt" %(fdir, froot))
+        shutil.move("posterior_sample.txt", "%s_posterior_sample.txt" %froot)
+        shutil.move("levels.txt", "%s_levels.txt" %froot)
+        shutil.move("sample_info.txt", "%s_sample_info.txt" %froot)
+        shutil.move("weights.txt", "%s_weights.txt" %froot)
     except IOError:
         print("No file posterior_sample.txt")
 
