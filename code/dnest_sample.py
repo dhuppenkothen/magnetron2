@@ -217,6 +217,7 @@ def plot_hyper_parameters(namestr, datadir="./", ouprocess=True, par_ind=10):
     ax21.hist(amp_mean, bins=50)
     ax21.set_xlabel("Mean of exponential amplitude prior")
     ax21.set_ylabel("Number of samples")
+    ax21.set_title(namestr)
 
     ax22.hist(rise_mean, bins=50)
     ax22.set_xlabel("Mean of exponential rise time prior")
