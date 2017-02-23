@@ -241,7 +241,7 @@ def find_weights(p_samples):
 
 
 def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
-              ncores=8):
+              ncores=8, min_levels=10):
 
     assert isinstance(ncores, int), "Number of cores must be an integer number!"
 
@@ -276,13 +276,17 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     endflag = False
     while endflag is False:
         try:
-            tsys.sleep(60)
-            logx_samples, p_samples = postprocess_new(save_posterior=False)
-            if p_samples is None:
+            tsys.sleep(120)
+            levels = np.loadtxt("%slevels.txt" %dnest_dir)
+            if len(levels)-1 <= min_levels:
                 endflag = False
             else:
-                endflag = find_weights(p_samples)
-                print("Endflag: " + str(endflag))
+                logx_samples, p_samples = postprocess_new(save_posterior=False)
+                if p_samples is None:
+                    endflag = False
+                else:
+                    endflag = find_weights(p_samples)
+                    print("Endflag: " + str(endflag))
 
         except KeyboardInterrupt:
             break
@@ -344,7 +348,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
 
 
 def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat",
-                   ncores=8, nsims=100, match_string="*.csv"):
+                   ncores=8, nsims=100, match_string="*.csv", min_levels=10):
 
     print("I am in run_all_bursts")
     filenames = glob.glob("%s%s"%(data_dir, match_string))
@@ -360,7 +364,7 @@ def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat
     for f in filenames:
         print("Running on burst %s" %f)
         run_burst(f, dnest_dir=dnest_dir, levelfilename=levelfilename,
-                  ncores=ncores, nsims=nsims)
+                  ncores=ncores, nsims=nsims, min_levels=min_levels)
 
     return
 
@@ -368,7 +372,8 @@ def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat
 def main():
     print("I am in main")
     run_all_bursts(data_dir, dnest_dir, levelfilename, ncores=ncores,
-                   nsims=nsamples, match_string=match_string)
+                   nsims=nsamples, match_string=match_string,
+                   min_levels=min_levels)
     return
 
 
@@ -403,6 +408,10 @@ if __name__ == "__main__":
                         help="The string to use to search for data files to "
                              "run.")
 
+    parser.add_argument("--min-levels", action="store", required=False,
+                        dest="min_levels", default=200, type=int,
+                        help="The minimum number of levels to run.")
+
     clargs = parser.parse_args()
 
     data_dir = clargs.data_dir
@@ -411,5 +420,6 @@ if __name__ == "__main__":
     ncores = clargs.ncores
     match_string = clargs.match_string
     nsamples = clargs.nsamples
+    min_levels = clargs.min_levels
 
     main()
