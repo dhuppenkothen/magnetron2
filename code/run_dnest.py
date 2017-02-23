@@ -7,7 +7,7 @@ import copy
 import glob
 import argparse
 
-from dnest4 import postprocess
+from dnest4.classic import logsumexp, logdiffexp
 
 def rewrite_main(filename, dnest_dir = "./"):
 
@@ -179,14 +179,14 @@ def postprocess_new(temperature=1., numResampleLogX=1, plot=False,
                     right = levels[i][0]
 
                 logp_samples[logl_samples_thisLevel[j][2]][z] = \
-                    np.log(0.5) + postprocess.logdiffexp(right, left)
+                    np.log(0.5) + logdiffexp(right, left)
 
         logl = sample_info[:,1]/temperature
 
         logp_samples[:,z] = logp_samples[:,z] - \
-                            postprocess.logsumexp(logp_samples[:,z])
+                            logsumexp(logp_samples[:,z])
         logP_samples[:,z] = logp_samples[:,z] + logl
-        logz_estimates[z] = postprocess.logsumexp(logP_samples[:,z])
+        logz_estimates[z] = logsumexp(logP_samples[:,z])
         logP_samples[:,z] -= logz_estimates[z]
         P_samples[:,z] = np.exp(logP_samples[:,z])
         H_estimates[z] = -logz_estimates[z] + np.sum(P_samples[:,z]*logl)
