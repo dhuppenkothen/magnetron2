@@ -23,18 +23,18 @@ Dependencies
 Installation
 ============
 
-First, make sure DNest4 is installed and the `DNEST4_PATH` variable set correctly.
-Also, please run `python setup.py install` in the python directory of DNest4.
+First, make sure DNest4 is installed and the ``DNEST4_PATH`` variable set correctly.
+Also, please run ``python setup.py install`` in the python directory of DNest4.
 
-In this case, installing magnetron2 should be as simple as typing `make` in the `/code/`
+In this case, installing ``magnetron2`` should be as simple as typing ``make`` in the ``/code/``
 directory!
 
 Running the Code
 ================
 
-`magnetron2` unfortunately doesn't have a super convenient user interface. File names of 
-data files to be run generally need to be changed directly in `main.cpp`. For automatization, 
-you can use the `run_dnest.py` script, which automatically reads all files with a certain 
+``magnetron2`` unfortunately doesn't have a super convenient user interface. File names of 
+data files to be run generally need to be changed directly in ``main.cpp``. For automatization, 
+you can use the ``run_dnest.py`` script, which automatically reads all files with a certain 
 matching string in a given directory and will run magnetron2 on each file one after the other. 
 Be aware that the script is a bit hacky and not the ideal version to do this, but this is 
 what we have.
@@ -47,7 +47,7 @@ Coming soon!
 Copyright
 =========
 
-All content © 2016 the authors. The code is distributed under the MIT license.
+All content © 2017 the authors. The code is distributed under the MIT license.
 
 Pull requests are welcome! If you are interested in the further development of
 this project, please `get in touch via the issues
