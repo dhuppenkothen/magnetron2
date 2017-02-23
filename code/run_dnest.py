@@ -240,7 +240,7 @@ def find_weights(p_samples):
         return False
 
 
-def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=1,
+def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
               ncores=8):
 
     assert isinstance(ncores, int), "Number of cores must be an integer number!"
@@ -281,7 +281,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=1,
             if p_samples is None:
                 endflag = False
             else:
-                endflag = True #find_weights(p_samples)
+                endflag = find_weights(p_samples)
                 print("Endflag: " + str(endflag))
 
         except KeyboardInterrupt:
@@ -319,7 +319,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=1,
             if len(samples) >= nsims and len(np.shape(samples)) > 1:
                 endflag = True
             else:
-                endflag = True #False
+                endflag = False
         except KeyboardInterrupt:
             break
 
@@ -344,10 +344,10 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=1,
 
 
 def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat",
-                   ncores=8):
+                   ncores=8, nsims=100, match_string="*.csv"):
 
     print("I am in run_all_bursts")
-    filenames = glob.glob("%s*.csv"%data_dir)
+    filenames = glob.glob("%s%s"%(data_dir, match_string))
     print(filenames)
 
     levelfilename = data_dir+levelfilename
@@ -360,14 +360,15 @@ def run_all_bursts(data_dir="./", dnest_dir="./", levelfilename="test_levels.dat
     for f in filenames:
         print("Running on burst %s" %f)
         run_burst(f, dnest_dir=dnest_dir, levelfilename=levelfilename,
-                  ncores=ncores)
+                  ncores=ncores, nsims=nsims)
 
     return
 
 
 def main():
     print("I am in main")
-    run_all_bursts(data_dir, dnest_dir, levelfilename, ncores=ncores)
+    run_all_bursts(data_dir, dnest_dir, levelfilename, ncores=ncores,
+                   nsims=nsamples, match_string=match_string)
     return
 
 
@@ -383,6 +384,7 @@ if __name__ == "__main__":
                         dest="dnest_dir", default="./",
                         help="Specify directory with DNest model "
                              "implementation (default: current directory")
+
     parser.add_argument("-f", "--filename", action="store", required=False,
                         dest="filename", default="test_levels.dat",
                         help="Define filename for file that saves the number "
@@ -392,11 +394,22 @@ if __name__ == "__main__":
                         dest="ncores", default=8, help="Number of cores "
                                                        "DNest4 should use.")
 
+    parser.add_argument("--samples", action="store", required=False, type=int,
+                        dest="nsamples", default=100, help="Numer of posterior "
+                                                        "samples to store.")
+
+    parser.add_argument("-s", "--string", action="store", required=False,
+                        dest="match_string", default="*.csv",
+                        help="The string to use to search for data files to "
+                             "run.")
+
     clargs = parser.parse_args()
 
     data_dir = clargs.data_dir
     dnest_dir = clargs.dnest_dir
     levelfilename = clargs.filename
     ncores = clargs.ncores
+    match_string = clargs.match_string
+    nsamples = clargs.nsamples
 
     main()
