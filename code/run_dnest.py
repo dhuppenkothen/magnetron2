@@ -275,7 +275,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     endflag = False
     while endflag is False:
         try:
-            tsys.sleep(120)
+            tsys.sleep(360)
             levels = np.loadtxt("%slevels.txt" %dnest_dir)
             if len(levels)-1 <= min_levels:
                 endflag = False
@@ -314,7 +314,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     endflag = False
     while endflag is False:
         try:
-            tsys.sleep(120)
+            tsys.sleep(300)
             logx_samples, p_samples = postprocess_new(save_posterior=True)
             post_samples = np.loadtxt("%sposterior_sample.txt"%dnest_dir)
             print("samples file: %ssample.txt" %dnest_dir)
