@@ -296,7 +296,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
 
     dnest_process.kill()
     dnest_data = np.loadtxt("%slevels.txt" %dnest_dir)
-    nlevels = len(dnest_data)-1
+    nlevels = len(dnest_data)+100
 
     nsamples = len(np.loadtxt("%ssample.txt"%dnest_dir))
 
