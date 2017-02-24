@@ -1,4 +1,4 @@
-
+import os
 import shutil
 import subprocess
 import time as tsys
@@ -241,13 +241,14 @@ def find_weights(p_samples):
 
 
 def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
-              ncores=8, min_levels=10):
+              ncores=8, min_levels=100):
 
     assert isinstance(ncores, int), "Number of cores must be an integer number!"
 
     ### first run: set levels to 200
     print("Rewriting DNest run file")
     rewrite_main(filename, dnest_dir)
+    # rewrite_options(nlevels=1000, dnest_dir=dnest_dir)
     rewrite_options(nlevels=1000, dnest_dir=dnest_dir)
     remake_model(dnest_dir)
 
@@ -271,8 +272,6 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     ## run DNest
     dnest_process = subprocess.Popen(["./main", "-t", "%i"%ncores])
 
-
-
     endflag = False
     while endflag is False:
         try:
@@ -288,6 +287,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
                     endflag = find_weights(p_samples)
                     print("Endflag: " + str(endflag))
 
+
         except KeyboardInterrupt:
             break
 
@@ -298,6 +298,7 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
     dnest_data = np.loadtxt("%slevels.txt" %dnest_dir)
     nlevels = len(dnest_data)-1
 
+    nsamples = len(np.loadtxt("%ssample.txt"%dnest_dir))
 
     ### save levels to file
     if not levelfilename is None:
@@ -315,15 +316,30 @@ def run_burst(filename, dnest_dir = "./", levelfilename=None, nsims=100,
         try:
             tsys.sleep(120)
             logx_samples, p_samples = postprocess_new(save_posterior=True)
-            samples = np.loadtxt("%sposterior_sample.txt"%dnest_dir)
+            post_samples = np.loadtxt("%sposterior_sample.txt"%dnest_dir)
             print("samples file: %ssample.txt" %dnest_dir)
-            print("nlevels: %i" %len(samples)) 
             print("Endflag: " + str(endflag))
-
-            if len(samples) >= nsims and len(np.shape(samples)) > 1:
+            if len(post_samples) >= nsims and len(np.shape(post_samples)) > 1:
                 endflag = True
             else:
-                endflag = False
+                if len(post_samples) <= 10 or len(np.shape(post_samples)) == 1:
+                    print("I have made it here!")
+                    levels = np.loadtxt("%slevels.txt" % dnest_dir)
+                    raw_samples = len(np.loadtxt("%ssample.txt" % dnest_dir))
+
+                    if len(levels) >= nlevels-1 and raw_samples > nsamples+1000:
+                        print("I have almost made it to the right spot!")
+                        endflag = True
+                        broken_file = "%sfailed.txt"%data_dir
+                        if os.path.exists(broken_file):
+                            append_write = 'a'  # append if already exists
+                        else:
+                            append_write = 'w'  # make a new file if not
+                        with open(broken_file, append_write) as f:
+                            f.write(filename + "\n")
+
+                else:
+                    endflag = False
         except KeyboardInterrupt:
             break
 
