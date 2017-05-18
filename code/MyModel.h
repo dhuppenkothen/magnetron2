@@ -27,11 +27,12 @@ class MyModel
 		
 		// Extra white noise on teh Poisson rate
 		std::vector<double> noise_normals;
+
 		double noise_sigma, noise_L;
 
 		// Poisson mean
 		std::vector<long double> mu;
-
+		std::vector<long double> ynoise;
 		// Calculate mu from scratch:
 		void calculate_mu();
 

@@ -66,16 +66,18 @@ void MyModel::calculate_mu()
 				mu[i] += amplitude*exp((t[i] - tc)/rise);
                         }
                 }
-        vector<double> y(mu.size());
+
+        ynoise.assign(mu.size(), 0.0);
+
         double alpha = exp(-1./noise_L);
 
         for(size_t i=0; i<mu.size(); i++)
         {
                 if(i==0)
-                        y[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
+                        ynoise[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
                 else
-                        y[i] = alpha*y[i-1] + noise_sigma*noise_normals[i];
-                mu[i] *= exp(y[i]);
+                        ynoise[i] = alpha*ynoise[i-1] + noise_sigma*noise_normals[i];
+                mu[i] *= exp(ynoise[i]);
         }
 
         }
@@ -176,6 +178,11 @@ void MyModel::print(std::ostream& out) const
 {
         out<<background<<' '<<noise_sigma<<' '<<noise_L<<' ';
         bursts.print(out);
+
+        for(size_t i=0; i<mu.size(); i++)
+                out<<ynoise[i]<<' ';
+
+
         for(size_t i=0; i<mu.size(); i++)
                 out<<mu[i]<<' ';
 
