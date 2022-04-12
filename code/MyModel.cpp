@@ -12,7 +12,7 @@ const Data& MyModel::data = Data::get_instance();
 MyModel::MyModel()
 :bursts(4, 100, false, MyConditionalPrior(data.get_t_min(), data.get_t_max(),
                 1E-10, 5.0*3.5e5*data.get_dt()))
-,noise_normals(data.get_t().size())
+//,noise_normals(data.get_t().size())
 ,mu(data.get_t().size())
 {
 
@@ -75,18 +75,18 @@ void MyModel::calculate_mu()
                                                  exp((tc - t_right[i])/fall));
                         }
                 }
-        vector<double> y(mu.size());
-        double alpha = exp(-1./noise_L);
-
-        for(size_t i=0; i<mu.size(); i++)
-        {
-                if(i==0)
-                        y[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
-                else
-                        y[i] = alpha*y[i-1] + noise_sigma*noise_normals[i];
-                mu[i] *= exp(y[i]);
-        }
-
+//        vector<double> y(mu.size());
+//        double alpha = exp(-1./noise_L);
+//
+//        for(size_t i=0; i<mu.size(); i++)
+//        {
+//                if(i==0)
+//                        y[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
+//                else
+//                        y[i] = alpha*y[i-1] + noise_sigma*noise_normals[i];
+//                mu[i] *= exp(y[i]);
+//        }
+//
 
         }
 
@@ -98,9 +98,9 @@ void MyModel::from_prior(RNG& rng)
 	background = exp(background);
 	bursts.from_prior(rng);
  
-        noise_sigma = exp(log(1E-3) + log(1E3)*rng.rand());
-        noise_L = exp(log(1E-2*Data::get_instance().get_t_range())
-                        + log(1E3)*rng.rand());
+//        noise_sigma = exp(log(1E-3) + log(1E3)*rng.rand());
+//        noise_L = exp(log(1E-2*Data::get_instance().get_t_range())
+//                        + log(1E3)*rng.rand());
 
         calculate_mu();
 
@@ -126,28 +126,31 @@ double MyModel::perturb(RNG& rng)
                         mu[i] += background;
         }
 
-        else if(rng.rand() <= 0.5)
-        {
-                noise_sigma = log(noise_sigma);
-                noise_sigma += log(1E3)*rng.randh();
-                wrap(noise_sigma, log(1E-3), log(1.));
-                noise_sigma = exp(noise_sigma);
-
-                noise_L = log(noise_L);
-                noise_L += log(1E3)*rng.randh();
-                wrap(noise_L, log(1E-2*Data::get_instance().get_t_range()), log(10.*Data::get_instance().get_t_range()));
-                noise_L = exp(noise_L);
-
-                calculate_mu();
-        }
+//        else if(rng.rand() <= 0.5)
+//        {
+//                noise_sigma = log(noise_sigma);
+//                noise_sigma += log(1E3)*rng.randh();
+//                wrap(noise_sigma, log(1E-3), log(1.));
+//                noise_sigma = exp(noise_sigma);
+//
+//                noise_L = log(noise_L);
+//                noise_L += log(1E3)*rng.randh();
+//                wrap(noise_L, log(1E-2*Data::get_instance().get_t_range()), log(10.*Data::get_instance().get_t_range()));
+//                noise_L = exp(noise_L);
+//
+//                calculate_mu();
+//        }
         else
         {
-                int num = exp(log((double)noise_normals.size())*rng.rand());
-                for(int i=0; i<num; i++)
-                {
-                        int k = rng.rand_int(noise_normals.size());
-                        noise_normals[k] = rng.randn();
-                }
+//                int num = exp(log((double)noise_normals.size())*rng.rand());
+//                for(int i=0; i<num; i++)
+//                {
+//                        int k = rng.rand_int(noise_normals.size());
+//                        noise_normals[k] = rng.randn();
+//                }
+                logH += bursts.perturb(rng);  
+                bursts.consolidate_diff();
+
                 calculate_mu();
         }
 

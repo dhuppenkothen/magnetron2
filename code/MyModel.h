@@ -22,8 +22,8 @@ class MyModel
 		DNest4::RJObject<MyConditionalPrior> bursts;
 		
 		// Extra white noise on teh Poisson rate
-		std::vector<double> noise_normals;
-		double noise_sigma, noise_L;
+//		std::vector<double> noise_normals;
+//		double noise_sigma, noise_L;
 
 		// Poisson mean
 		std::vector<long double> mu;
