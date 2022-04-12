@@ -6,12 +6,12 @@
 class Data
 {
 	private:
-		std::vector<double> t, y;
+		std::vector<double> t, y, yerr;
 		std::vector<double> t_left, t_right;
 
 		// Some useful summaries
 		double t_min, t_max, t_range, dt;
-		double y_mean;
+//		double y_mean;
 		void compute_summaries();
 
 	public:
@@ -23,6 +23,7 @@ class Data
 		const std::vector<double>& get_t_left() const { return t_left; }
 		const std::vector<double>& get_t_right() const { return t_right; }
 		const std::vector<double>& get_y() const { return y; }
+                const std::vector<double>& get_yerr() const { return yerr; }
 		double get_t_min() const { return t_min; }
 		double get_t_max() const { return t_max; }
 		double get_t_range() const { return t_range; }

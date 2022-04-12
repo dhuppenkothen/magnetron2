@@ -20,8 +20,9 @@ MyModel::MyModel()
 
 void MyModel::calculate_mu()
 {
-        const vector<double>& t_left = data.get_t_left();
-        const vector<double>& t_right = data.get_t_right();
+//        const vector<double>& t_left = data.get_t_left();
+//        const vector<double>& t_right = data.get_t_right();
+        const vector<double>& t = data.get_t();
 
         // Update or from scratch?
         bool update = (bursts.get_added().size() < bursts.get_components().size());
@@ -36,6 +37,7 @@ void MyModel::calculate_mu()
 
         double amplitude, skew, tc;
         double rise, fall;
+        double tpar;
 
         for(size_t j=0; j<components.size(); j++)
         {
@@ -44,36 +46,40 @@ void MyModel::calculate_mu()
                 rise = components[j][2];
                 skew = components[j][3];
 
-                fall = rise*skew;
+                //fall = rise*skew;
 
                 for(size_t i=0; i<mu.size(); i++)
                 {
-                        if(tc <= t_left[i])
+                        tpar = (t[i] - tc) / rise; 
+                        if(tc <= t[i])
                         {
                                 // Bin to the right of peak
-                                mu[i] += amplitude*fall/data.get_dt()*
-                                                (exp((tc - t_left[i])/fall) -
-                                                 exp((tc - t_right[i])/fall));
+//                                mu[i] += amplitude*fall/data.get_dt()*
+//                                                (exp((tc - t_left[i])/fall) -
+//                                                 exp((tc - t_right[i])/fall));
+                                  mu[i] += amplitude*exp(-tpar / skew);
                         }
-                        else if(tc >= t_right[i])
+                        else// if(tc >= t_right[i])
                         {
                                 // Bin to the left of peak
-                                mu[i] += -amplitude*rise/data.get_dt()*
-                                                (exp((t_left[i] - tc)/rise) -
-                                                 exp((t_right[i] - tc)/rise));
-                        }
-                        else
-                        {
-                                // Part to the left
-                                mu[i] += -amplitude*rise/data.get_dt()*
-                                                (exp((t_left[i] - tc)/rise) -
-                                                 1.);
+//                                mu[i] += -amplitude*rise/data.get_dt()*
+//                                                (exp((t_left[i] - tc)/rise) -
+//                                                 exp((t_right[i] - tc)/rise));
+                                  mu[i] += amplitude*exp(tpar);
 
-                                // Part to the right
-                                mu[i] += amplitude*fall/data.get_dt()*
-                                                (1. -
-                                                 exp((tc - t_right[i])/fall));
                         }
+//                        else
+//                        {
+//                                // Part to the left
+//                                mu[i] += -amplitude*rise/data.get_dt()*
+//                                                (exp((t_left[i] - tc)/rise) -
+//                                                 1.);
+
+//                                // Part to the right
+//                                mu[i] += amplitude*fall/data.get_dt()*
+//                                                (1. -
+//                                                 exp((tc - t_right[i])/fall));
+//                        }
                 }
 //        vector<double> y(mu.size());
 //        double alpha = exp(-1./noise_L);
@@ -162,11 +168,12 @@ double MyModel::log_likelihood() const
 {
         const vector<double>& t = data.get_t();
         const vector<double>& y = data.get_y();
+        const vector<double>& yerr = data.get_yerr();
 
         double logl = 0.;
         for(size_t i=0; i<t.size(); i++)
-                logl += -mu[i] + y[i]*log(mu[i]) - lgamma(y[i] + 1.);//gsl_sf_lngamma(y[i] + 1.);
-
+//                logl += -mu[i] + y[i]*log(mu[i]) - lgamma(y[i] + 1.);//gsl_sf_lngamma(y[i] + 1.);
+                  logl += -0.5 * log(2.*M_PI) - log(yerr[i]) - 0.5 * pow((y[i] - mu[i]) / yerr[i], 2);
 	return logl;
 }
 

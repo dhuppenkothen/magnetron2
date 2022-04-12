@@ -8,7 +8,7 @@ using namespace DNest4;
 
 int main(int argc, char** argv)
 {
-	Data::get_instance().load("../data/sample_data.txt");
+	Data::get_instance().load("../data/gauss_test.dat");
 	Sampler<MyModel> sampler = setup<MyModel>(argc, argv);
 	sampler.run();
 	return 0;
