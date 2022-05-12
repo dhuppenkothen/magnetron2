@@ -14,6 +14,9 @@ class MyConditionalPrior:public DNest4::ConditionalPrior
 		// Mean of amplitudes and widths
 		double mu, mu_widths;
 
+                // sigma for log(amplitude) and log(width)
+		double sig, sig_widths;
+
 		// Uniform for log-skews
 		double a, b; // Midpoint and half-width
 

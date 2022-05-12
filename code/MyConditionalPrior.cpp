@@ -2,6 +2,7 @@
 #include "DNest4/code/Utils.h"
 #include "Data.h"
 #include <cmath>
+#include <gsl/gsl_cdf.h>
 
 using namespace DNest4;
 
@@ -22,6 +23,10 @@ void MyConditionalPrior::from_prior(RNG& rng)
 	mu = exp(mu);
 	mu_widths = exp(log(1E-3*(x_max - x_min)) + log(1E3)*rng.rand());
 
+	sig = 2.*rng.rand();
+	sig_widths = 2.*rng.rand();
+
+
 	a = -10. + 20.*rng.rand();
 	b = 2.*rng.rand();
 }
@@ -30,7 +35,7 @@ double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 {
 	double logH = 0.;
 
-	int which = rng.rand_int(4);
+	int which = rng.rand_int(6);
 
 	if(which == 0)
 	{
@@ -50,10 +55,20 @@ double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 	}
 	if(which == 2)
 	{
+		sig += 2.*rng.randh();
+		sig = mod(sig, 2.);
+	}
+	if(which == 3)
+	{
+		sig_widths += 2.*rng.randh();
+		sig_widths = mod(sig, 2.);
+	}
+        if(which == 4)
+	{
 		a += 20.*rng.randh();
 		a = mod(a + 10., 20.) - 10.;
 	}
-	if(which == 3)
+	if(which == 5)
 	{
 		b += 2.*rng.randh();
 		b = mod(b, 2.);
@@ -75,21 +90,27 @@ double MyConditionalPrior::log_pdf(const std::vector<double>& vec) const
 void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 {
 	vec[0] = x_min + (x_max - x_min)*vec[0];
-	vec[1] = -mu*log(1. - vec[1]);
-	vec[2] = min_width - mu_widths*log(1. - vec[2]);
+	//vec[1] = -mu*log(1. - vec[1]);
+	//vec[2] = min_width - mu_widths*log(1. - vec[2]);
+	vec[1] = exp(log(mu) + sig*gsl_cdf_ugaussian_Pinv(vec[1]));
+	vec[2] = exp(log(mu_widths) + sig_widths*gsl_cdf_ugaussian_Pinv(vec[2]));
 	vec[3] = exp(a - b + 2.*b*vec[3]);
 }
 
 void MyConditionalPrior::to_uniform(std::vector<double>& vec) const
 {
 	vec[0] = (vec[0] - x_min)/(x_max - x_min);
-	vec[1] = 1. - exp(-vec[1]/mu);
-	vec[2] = 1. - exp(-(vec[2] - min_width)/mu_widths);
+	//vec[1] = 1. - exp(-vec[1]/mu);
+	//vec[2] = 1. - exp(-(vec[2] - min_width)/mu_widths);
+	vec[1] = gsl_cdf_ugaussian_P((log(vec[1]) - log(mu))/sig);
+	vec[2] = gsl_cdf_ugaussian_P((log(vec[2]) - log(mu_widths))/sig_widths);
 	vec[3] = (log(vec[3]) + b - a)/(2.*b);
 }
 
 void MyConditionalPrior::print(std::ostream& out) const
 {
-	out<<mu<<' '<<mu_widths<<' '<<a<<' '<<b<<' ';
+//	out<<mu<<' '<<mu_widths<<' '<<a<<' '<<b<<' ';
+	out<<mu<<' '<<sig<<' '<<mu_widths<<' '<<sig_widths<<' '<<a<<' '<<b<<' ';
+
 }
 
