@@ -2,6 +2,8 @@
 #include "DNest4/code/Utils.h"
 #include "Data.h"
 #include <cmath>
+#include <gsl/gsl_cdf.h>
+#include <gsl/gsl_sf_erf.h>
 
 using namespace std;
 using namespace DNest4;
@@ -20,8 +22,6 @@ MyModel::MyModel()
 
 void MyModel::calculate_mu()
 {
-//        const vector<double>& t_left = data.get_t_left();
-//        const vector<double>& t_right = data.get_t_right();
         const vector<double>& t = data.get_t();
 
         // Update or from scratch?
@@ -36,8 +36,10 @@ void MyModel::calculate_mu()
                 mu.assign(mu.size(), background);
 
         double amplitude, skew, tc;
-        double rise, fall;
+        double rise;
         double tpar;
+        double cdf, pdf;
+        double erf_inner, pdf_fac;
 
         for(size_t j=0; j<components.size(); j++)
         {
@@ -46,53 +48,18 @@ void MyModel::calculate_mu()
                 rise = components[j][2];
                 skew = components[j][3];
 
-                //fall = rise*skew;
 
                 for(size_t i=0; i<mu.size(); i++)
                 {
-                        tpar = (t[i] - tc) / rise; 
-                        if(tc <= t[i])
-                        {
-                                // Bin to the right of peak
-//                                mu[i] += amplitude*fall/data.get_dt()*
-//                                                (exp((tc - t_left[i])/fall) -
-//                                                 exp((tc - t_right[i])/fall));
-                                  mu[i] += amplitude*exp(-tpar / skew);
-                        }
-                        else// if(tc >= t_right[i])
-                        {
-                                // Bin to the left of peak
-//                                mu[i] += -amplitude*rise/data.get_dt()*
-//                                                (exp((t_left[i] - tc)/rise) -
-//                                                 exp((t_right[i] - tc)/rise));
-                                  mu[i] += amplitude*exp(tpar);
+                        
+                        tpar = (t[i] - tc); 
+                        erf_inner = skew * (tpar/rise) / sqrt(2);
+                        cdf = 0.5 * (1.0 + gsl_sf_erf(erf_inner));
+                        pdf_fac = 1.0 / (rise * pow(2*M_PI, 0.5));
+                        pdf = pdf_fac * exp(-pow(tpar, 2) / (2*pow(rise, 2)));
+                        mu[i] += amplitude * 2 * pdf * cdf;
 
-                        }
-//                        else
-//                        {
-//                                // Part to the left
-//                                mu[i] += -amplitude*rise/data.get_dt()*
-//                                                (exp((t_left[i] - tc)/rise) -
-//                                                 1.);
-
-//                                // Part to the right
-//                                mu[i] += amplitude*fall/data.get_dt()*
-//                                                (1. -
-//                                                 exp((tc - t_right[i])/fall));
-//                        }
                 }
-//        vector<double> y(mu.size());
-//        double alpha = exp(-1./noise_L);
-//
-//        for(size_t i=0; i<mu.size(); i++)
-//        {
-//                if(i==0)
-//                        y[i] = noise_sigma/sqrt(1. - alpha*alpha)*noise_normals[i];
-//                else
-//                        y[i] = alpha*y[i-1] + noise_sigma*noise_normals[i];
-//                mu[i] *= exp(y[i]);
-//        }
-//
 
         }
 
