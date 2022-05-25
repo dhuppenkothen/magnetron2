@@ -28,7 +28,7 @@ void MyConditionalPrior::from_prior(RNG& rng)
 
 
 	a = -10. + 20.*rng.rand();
-	b = 2.*rng.rand();
+	b = 5.*rng.rand();
 }
 
 double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
@@ -70,8 +70,8 @@ double MyConditionalPrior::perturb_hyperparameters(RNG& rng)
 	}
 	if(which == 5)
 	{
-		b += 2.*rng.randh();
-		b = mod(b, 2.);
+		b += 5.*rng.randh();
+		b = mod(b, 5.);
 	}
 
 	return logH;
@@ -90,8 +90,6 @@ double MyConditionalPrior::log_pdf(const std::vector<double>& vec) const
 void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 {
 	vec[0] = x_min + (x_max - x_min)*vec[0];
-	//vec[1] = -mu*log(1. - vec[1]);
-	//vec[2] = min_width - mu_widths*log(1. - vec[2]);
 	vec[1] = exp(log(mu) + sig*gsl_cdf_ugaussian_Pinv(vec[1]));
 	vec[2] = exp(log(mu_widths) + sig_widths*gsl_cdf_ugaussian_Pinv(vec[2]));
 	vec[3] = exp(a - b + 2.*b*vec[3]);
@@ -100,8 +98,6 @@ void MyConditionalPrior::from_uniform(std::vector<double>& vec) const
 void MyConditionalPrior::to_uniform(std::vector<double>& vec) const
 {
 	vec[0] = (vec[0] - x_min)/(x_max - x_min);
-	//vec[1] = 1. - exp(-vec[1]/mu);
-	//vec[2] = 1. - exp(-(vec[2] - min_width)/mu_widths);
 	vec[1] = gsl_cdf_ugaussian_P((log(vec[1]) - log(mu))/sig);
 	vec[2] = gsl_cdf_ugaussian_P((log(vec[2]) - log(mu_widths))/sig_widths);
 	vec[3] = (log(vec[3]) + b - a)/(2.*b);
